@@ -443,14 +443,14 @@ print_speedtest_ru() {
 	rm -rf speedtest.py
 }
 
-geekbench4() {
+geekbench() {
 	echo "" | tee -a "$log"
-	echo -e " Performing Geekbench v4 CPU Benchmark test. Please wait..."
+	echo -e " Performing Geekbench v5 CPU Benchmark test. Please wait..."
 
 	GEEKBENCH_PATH="$HOME/geekbench"
 	mkdir -p "$GEEKBENCH_PATH"
-	curl -s http://cdn.geekbench.com/Geekbench-4.3.4-Linux.tar.gz | tar xz --strip-components=1 -C "$GEEKBENCH_PATH"
-	GEEKBENCH_TEST=$("$GEEKBENCH_PATH/geekbench4" | grep "https://browser")
+	curl -s http://cdn.geekbench.com/Geekbench-5.1.0-Linux.tar.gz | tar xz --strip-components=1 -C "$GEEKBENCH_PATH"
+	GEEKBENCH_TEST=$("$GEEKBENCH_PATH/geekbench" | grep "https://browser")
 	GEEKBENCH_URL=$(echo -e "$GEEKBENCH_TEST" | head -1)
 	GEEKBENCH_URL_CLAIM=$(echo "$GEEKBENCH_URL" | awk '{ print $2 }')
 	GEEKBENCH_URL=$(echo "$GEEKBENCH_URL" | awk '{ print $1 }')
@@ -477,7 +477,7 @@ geekbench4() {
 	echo "" | tee -a "$log"
 	echo -e "  Single Core : $GEEKBENCH_SCORES_SINGLE  $grank" | tee -a "$log"
 	echo -e "   Multi Core : $GEEKBENCH_SCORES_MULTI" | tee -a "$log"
-	[ -n "$GEEKBENCH_URL_CLAIM" ] && echo -e "$GEEKBENCH_URL_CLAIM" >geekbench4_claim.url 2>/dev/null
+	[ -n "$GEEKBENCH_URL_CLAIM" ] && echo -e "$GEEKBENCH_URL_CLAIM" >geekbench_claim.url 2>/dev/null
 	echo "" | tee -a "$log"
 	echo -e " Cooling down..."
 	sleep 9
@@ -1025,7 +1025,8 @@ cleanup() {
 	rm -f speedtest.sh
 	rm -f tools.py
 	rm -f ip_json.json
-	rm -f geekbench4_claim.url
+	rm -f geekbench_claim.url
+	rm -f geekbench5_claim.url
 	rm -rf geekbench
 }
 
@@ -1039,7 +1040,7 @@ bench_all() {
 	print_system_info
 	ip_info4
 	next
-	geekbench4
+	geekbench
 	iotest
 	write_io
 	print_speedtest
@@ -1059,7 +1060,7 @@ usa_bench() {
 	print_system_info
 	ip_info4
 	next
-	geekbench4
+	geekbench
 	iotest
 	write_io
 	print_speedtest_usa
@@ -1079,7 +1080,7 @@ europe_bench() {
 	print_system_info
 	ip_info4
 	next
-	geekbench4
+	geekbench
 	iotest
 	write_io
 	print_speedtest_europe
@@ -1099,7 +1100,7 @@ asia_bench() {
 	print_system_info
 	ip_info4
 	next
-	geekbench4
+	geekbench
 	iotest
 	write_io
 	print_speedtest_asia
@@ -1119,7 +1120,7 @@ sa_bench() {
 	print_system_info
 	ip_info4
 	next
-	geekbench4
+	geekbench
 	iotest
 	write_io
 	print_speedtest_sa
@@ -1139,7 +1140,7 @@ ukraine_bench() {
 	print_system_info
 	ip_info4
 	next
-	geekbench4
+	geekbench
 	iotest
 	write_io
 	print_speedtest_ukraine
@@ -1158,7 +1159,7 @@ lviv_bench() {
 	print_system_info
 	ip_info4
 	next
-	geekbench4
+	geekbench
 	iotest
 	write_io
 	print_speedtest_lviv
@@ -1177,7 +1178,7 @@ meast_bench() {
 	print_system_info
 	ip_info4
 	next
-	geekbench4
+	geekbench
 	iotest
 	write_io
 	print_speedtest_meast
@@ -1196,7 +1197,7 @@ ru_bench() {
 	print_system_info
 	ip_info4
 	next
-	geekbench4
+	geekbench
 	iotest
 	write_io
 	print_speedtest_ru
@@ -1224,7 +1225,7 @@ case $1 in
 	;;
 'gb' | '-gb' | '--gb' | 'geek' | '-geek' | '--geek')
 	next
-	geekbench4
+	geekbench
 	next
 	cleanup
 	;;
