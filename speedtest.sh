@@ -450,7 +450,7 @@ geekbench() {
 	GEEKBENCH_PATH="$HOME/geekbench"
 	mkdir -p "$GEEKBENCH_PATH"
 	curl -s http://cdn.geekbench.com/Geekbench-5.1.0-Linux.tar.gz | tar xz --strip-components=1 -C "$GEEKBENCH_PATH"
-	GEEKBENCH_TEST=$("$GEEKBENCH_PATH/geekbench" | grep "https://browser")
+	GEEKBENCH_TEST=$("$GEEKBENCH_PATH/geekbench5" | grep "https://browser")
 	GEEKBENCH_URL=$(echo -e "$GEEKBENCH_TEST" | head -1)
 	GEEKBENCH_URL_CLAIM=$(echo "$GEEKBENCH_URL" | awk '{ print $2 }')
 	GEEKBENCH_URL=$(echo "$GEEKBENCH_URL" | awk '{ print $1 }')
@@ -473,7 +473,7 @@ geekbench() {
 
 	echo -ne "\e[1A"
 	echo -ne "\033[0K\r"
-	echostyle "## Geekbench v4 CPU Benchmark:"
+	echostyle "## Geekbench v5 CPU Benchmark:"
 	echo "" | tee -a "$log"
 	echo -e "  Single Core : $GEEKBENCH_SCORES_SINGLE  $grank" | tee -a "$log"
 	echo -e "   Multi Core : $GEEKBENCH_SCORES_MULTI" | tee -a "$log"
