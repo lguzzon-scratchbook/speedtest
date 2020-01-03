@@ -454,7 +454,7 @@ geekbench() {
 	GEEKBENCH_URL=$(echo -e "$GEEKBENCH_TEST" | head -1 | awk '{ print $1 }')
 	GEEKBENCH_URL_CLAIM=$(echo "$GEEKBENCH_URL" | grep "claim" | awk '{ print $1 }')
 	sleep 10
-	GEEKBENCH_SCORES=$(curl -Ls "$GEEKBENCH_URL" | grep "div class='score' | awk -v FS="(>|<)" '{ print $3 }'")
+	GEEKBENCH_SCORES=$(curl -Ls "$GEEKBENCH_URL" | grep "div class='score'" | awk -v FS="(>|<)" '{ print $3 }')
 	GEEKBENCH_SCORES_SINGLE=$(echo "$GEEKBENCH_SCORES" | head -1)
 	GEEKBENCH_SCORES_MULTI=$(echo "$GEEKBENCH_SCORES" | tail -1)
 
