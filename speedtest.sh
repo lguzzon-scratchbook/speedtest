@@ -22,6 +22,19 @@ cancel() {
 
 trap cancel SIGINT
 
+function padding() {
+	CONTENT="${1}"
+	PADDING="${2}"
+	LENGTH="${3}"
+	TRG_EDGE="${4}"
+	case "${TRG_EDGE}" in
+	left) echo "${CONTENT}" | sed -e :a -e 's/^.{1,'"${LENGTH}"'}$/&'"${PADDING}"'/;ta' ;;
+	right) echo "${CONTENT}" | sed -e :a -e 's/^.{1,'"${LENGTH}"'}$/'"${PADDING}"'&/;ta' ;;
+	center) echo "${CONTENT}" | sed -e :a -e 's/^.{1,'"${LENGTH}"'}$/'"${PADDING}"'&'"${PADDING}"'/;ta' ;;
+	esac
+	return "${RET__DONE}"
+}
+
 benchram="$HOME/tmpbenchram"
 NULL="/dev/null"
 
@@ -456,7 +469,9 @@ geekbench() {
 	sleep 10
 	GEEKBENCH_SCORES=$(curl -Ls "$GEEKBENCH_URL" | grep "div class='score'" | awk -v FS="(>|<)" '{ print $3 }')
 	GEEKBENCH_SCORES_SINGLE=$(echo "$GEEKBENCH_SCORES" | head -1)
+	GEEKBENCH_SCORES_SINGLE=$(padding "$GEEKBENCH_SCORES_SINGLE" " " "9" "left")
 	GEEKBENCH_SCORES_MULTI=$(echo "$GEEKBENCH_SCORES" | tail -1)
+	GEEKBENCH_SCORES_MULTI=$(padding "$GEEKBENCH_SCORES_MULTI" " " "9" "left")
 
 	if [[ "$GEEKBENCH_SCORES_SINGLE" -le 1700 ]]; then
 		grank="(POOR)"
