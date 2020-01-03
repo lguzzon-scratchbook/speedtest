@@ -32,7 +32,6 @@ function padding() {
 	right) echo "${CONTENT}" | sed -e :a -e 's/^.{1,'"${LENGTH}"'}$/'"${PADDING}"'&/;ta' ;;
 	center) echo "${CONTENT}" | sed -e :a -e 's/^.{1,'"${LENGTH}"'}$/'"${PADDING}"'&'"${PADDING}"'/;ta' ;;
 	esac
-	return "${RET__DONE}"
 }
 
 benchram="$HOME/tmpbenchram"
