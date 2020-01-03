@@ -187,16 +187,11 @@ speed_test() {
 		if [[ ${is_down} ]]; then
 			local REDownload=$(echo "$temp" | awk -F ':' '/Download/{print $2}')
 			local reupload=$(echo "$temp" | awk -F ':' '/Upload/{print $2}')
-			#local relatency=$(echo "$temp" | awk -F ':' '/Hosted/{print $2}')
 			local relatency=$(pingtest "$3")
-			#temp=$(echo "$relatency" | awk -F '.' '{print $1}')
-			#if [[ ${temp} -gt 1000 ]]; then
-			#relatency=" - "
-			#fi
 			local nodeName=$2
 
 			temp=$(echo "${REDownload}" | awk -F ' ' '{print $1}')
-			if [[ $(awk -v num1=${temp} -v num2=0 'BEGIN{print(num1>num2)?"1":"0"}') -eq 1 ]]; then
+			if [[ $(awk -v num1="${temp}" -v num2=0 'BEGIN{print(num1>num2)?"1":"0"}') -eq 1 ]]; then
 				printf "%-17s%-17s%-17s%-7s\n" " ${nodeName}" "${reupload}" "${REDownload}" "${relatency}" | tee -a "$log"
 			fi
 		else
@@ -452,25 +447,25 @@ geekbench4() {
 	echo "" | tee -a "$log"
 	echo -e " Performing Geekbench v4 CPU Benchmark test. Please wait..."
 
-	GEEKBENCH_PATH=$HOME/geekbench
-	mkdir -p $GEEKBENCH_PATH
-	curl -s http://cdn.geekbench.com/Geekbench-4.3.4-Linux.tar.gz | tar xz --strip-components=1 -C $GEEKBENCH_PATH
-	GEEKBENCH_TEST=$($GEEKBENCH_PATH/geekbench4 | grep "https://browser")
-	GEEKBENCH_URL=$(echo -e $GEEKBENCH_TEST | head -1)
-	GEEKBENCH_URL_CLAIM=$(echo $GEEKBENCH_URL | awk '{ print $2 }')
-	GEEKBENCH_URL=$(echo $GEEKBENCH_URL | awk '{ print $1 }')
+	GEEKBENCH_PATH="$HOME/geekbench"
+	mkdir -p "$GEEKBENCH_PATH"
+	curl -s http://cdn.geekbench.com/Geekbench-4.3.4-Linux.tar.gz | tar xz --strip-components=1 -C "$GEEKBENCH_PATH"
+	GEEKBENCH_TEST=$("$GEEKBENCH_PATH/geekbench4" | grep "https://browser")
+	GEEKBENCH_URL=$(echo -e "$GEEKBENCH_TEST" | head -1)
+	GEEKBENCH_URL_CLAIM=$(echo "$GEEKBENCH_URL" | awk '{ print $2 }')
+	GEEKBENCH_URL=$(echo "$GEEKBENCH_URL" | awk '{ print $1 }')
 	sleep 10
-	GEEKBENCH_SCORES=$(curl -s $GEEKBENCH_URL | grep "class='score' rowspan")
-	GEEKBENCH_SCORES_SINGLE=$(echo $GEEKBENCH_SCORES | awk -v FS="(>|<)" '{ print $3 }')
-	GEEKBENCH_SCORES_MULTI=$(echo $GEEKBENCH_SCORES | awk -v FS="(<|>)" '{ print $7 }')
+	GEEKBENCH_SCORES=$(curl -s "$GEEKBENCH_URL" | grep "class='score' rowspan")
+	GEEKBENCH_SCORES_SINGLE=$(echo "$GEEKBENCH_SCORES" | awk -v FS="(>|<)" '{ print $3 }')
+	GEEKBENCH_SCORES_MULTI=$(echo "$GEEKBENCH_SCORES" | awk -v FS="(<|>)" '{ print $7 }')
 
-	if [[ $GEEKBENCH_SCORES_SINGLE -le 1700 ]]; then
+	if [[ "$GEEKBENCH_SCORES_SINGLE" -le 1700 ]]; then
 		grank="(POOR)"
-	elif [[ $GEEKBENCH_SCORES_SINGLE -ge 1700 && $GEEKBENCH_SCORES_SINGLE -le 2300 ]]; then
+	elif [[ "$GEEKBENCH_SCORES_SINGLE" -ge 1700 && "$GEEKBENCH_SCORES_SINGLE" -le 2300 ]]; then
 		grank="(FAIR)"
-	elif [[ $GEEKBENCH_SCORES_SINGLE -ge 2300 && $GEEKBENCH_SCORES_SINGLE -le 3000 ]]; then
+	elif [[ "$GEEKBENCH_SCORES_SINGLE" -ge 2300 && "$GEEKBENCH_SCORES_SINGLE" -le 3000 ]]; then
 		grank="(GOOD)"
-	elif [[ $GEEKBENCH_SCORES_SINGLE -ge 3000 && $GEEKBENCH_SCORES_SINGLE -le 4000 ]]; then
+	elif [[ "$GEEKBENCH_SCORES_SINGLE" -ge 3000 && "$GEEKBENCH_SCORES_SINGLE" -le 4000 ]]; then
 		grank="(VERY GOOD)"
 	else
 		grank="(EXCELLENT)"
@@ -498,19 +493,19 @@ calc_disk() {
 	local total_size=0
 	local array=("$@")
 	for size in "${array[@]}"; do
-		[ "${size}" == "0" ] && size_t=0 || size_t=$(echo "${size:0:${#size}-1}")
-		[ "$(echo ${size:(-1)})" == "K" ] && size=0
-		[ "$(echo ${size:(-1)})" == "M" ] && size=$(awk 'BEGIN{printf "%.1f", '$size_t' / 1024}')
-		[ "$(echo ${size:(-1)})" == "T" ] && size=$(awk 'BEGIN{printf "%.1f", '$size_t' * 1024}')
-		[ "$(echo ${size:(-1)})" == "G" ] && size=${size_t}
-		total_size=$(awk 'BEGIN{printf "%.1f", '$total_size' + '$size'}')
+		[ "${size}" == "0" ] && size_t=0 || size_t="${size:0:${#size}-1}"
+		[ "${size:(-1)}" == "K" ] && size=0
+		[ "${size:(-1)}" == "M" ] && size=$(awk 'BEGIN{printf "%.1f", '"$size_t"' / 1024}')
+		[ "${size:(-1)}" == "T" ] && size=$(awk 'BEGIN{printf "%.1f", '"$size_t"' * 1024}')
+		[ "${size:(-1)}" == "G" ] && size=${size_t}
+		total_size=$(awk 'BEGIN{printf "%.1f", '$total_size' + '"$size"'}')
 	done
 	echo "${total_size}"
 }
 
 power_time() {
 
-	result=$(smartctl -a $(result=$(cat /proc/mounts) && echo $(echo "$result" | awk '/data=ordered/{print $1}') | awk '{print $1}') 2>&1) && power_time=$(echo "$result" | awk '/Power_On/{print $10}') && echo "$power_time"
+	result=$(smartctl -a "$(result=$(cat /proc/mounts) && echo "$(echo "$result" | awk '/data=ordered/{print $1}')" | awk '{print $1}')" 2>&1) && power_time=$(echo "$result" | awk '/Power_On/{print $10}') && echo "$power_time"
 }
 
 install_smart() {
@@ -743,24 +738,24 @@ get_system_info() {
 }
 
 write_test() {
-	(LANG=C dd if=/dev/zero of=test_file_$$ bs=512K count=$1 conv=fdatasync && rm -f test_file_$$) 2>&1 | awk -F, '{io=$NF} END { print io}' | sed 's/^[ \t]*//;s/[ \t]*$//'
+	(LANG=C dd if=/dev/zero of=test_file_$$ bs=512K count="$1" conv=fdatasync && rm -f test_file_$$) 2>&1 | awk -F, '{io=$NF} END { print io}' | sed 's/^[ \t]*//;s/[ \t]*$//'
 }
 
 averageio() {
-	ioraw1=$(echo $1 | awk 'NR==1 {print $1}')
-	[ "$(echo $1 | awk 'NR==1 {print $2}')" == "GB/s" ] && ioraw1=$(awk 'BEGIN{print '$ioraw1' * 1024}')
-	ioraw2=$(echo $2 | awk 'NR==1 {print $1}')
-	[ "$(echo $2 | awk 'NR==1 {print $2}')" == "GB/s" ] && ioraw2=$(awk 'BEGIN{print '$ioraw2' * 1024}')
-	ioraw3=$(echo $3 | awk 'NR==1 {print $1}')
-	[ "$(echo $3 | awk 'NR==1 {print $2}')" == "GB/s" ] && ioraw3=$(awk 'BEGIN{print '$ioraw3' * 1024}')
-	ioall=$(awk 'BEGIN{print '$ioraw1' + '$ioraw2' + '$ioraw3'}')
-	ioavg=$(awk 'BEGIN{printf "%.1f", '$ioall' / 3}')
+	ioraw1=$(echo "$1" | awk 'NR==1 {print $1}')
+	[ "$(echo "$1" | awk 'NR==1 {print $2}')" == "GB/s" ] && ioraw1=$(awk 'BEGIN{print '"$ioraw1"' * 1024}')
+	ioraw2=$(echo "$2" | awk 'NR==1 {print $1}')
+	[ "$(echo "$2" | awk 'NR==1 {print $2}')" == "GB/s" ] && ioraw2=$(awk 'BEGIN{print '"$ioraw2"' * 1024}')
+	ioraw3=$(echo "$3" | awk 'NR==1 {print $1}')
+	[ "$(echo "$3" | awk 'NR==1 {print $2}')" == "GB/s" ] && ioraw3=$(awk 'BEGIN{print '"$ioraw3"' * 1024}')
+	ioall=$(awk 'BEGIN{print '"$ioraw1"' + '"$ioraw2"' + '"$ioraw3"'}')
+	ioavg=$(awk 'BEGIN{printf "%.1f", '"$ioall"' / 3}')
 	printf "%s" "$ioavg"
 }
 
 cpubench() {
-	if hash $1 2>$NULL; then
-		io=$( (dd if=/dev/zero bs=512K count=$2 | $1) 2>&1 | grep 'copied' | awk -F, '{io=$NF} END {print io}')
+	if hash "$1" 2>$NULL; then
+		io=$( (dd if=/dev/zero bs=512K count="$2" | "$1") 2>&1 | grep 'copied' | awk -F, '{io=$NF} END {print io}')
 		if [[ $io != *"."* ]]; then
 			printf "%4i %s" "${io% *}" "${io##* }"
 		else
@@ -860,13 +855,13 @@ write_io() {
 		io3=$(write_test "$writemb")
 		echo -e "$io3" | tee -a "$log"
 		ioraw1=$(echo "$io1" | awk 'NR==1 {print $1}')
-		[ "$(echo "$io1" | awk 'NR==1 {print $2}')" == "GB/s" ] && ioraw1=$(awk 'BEGIN{print '$ioraw1' * 1024}')
+		[ "$(echo "$io1" | awk 'NR==1 {print $2}')" == "GB/s" ] && ioraw1=$(awk 'BEGIN{print '"$ioraw1"' * 1024}')
 		ioraw2=$(echo "$io2" | awk 'NR==1 {print $1}')
-		[ "$(echo "$io2" | awk 'NR==1 {print $2}')" == "GB/s" ] && ioraw2=$(awk 'BEGIN{print '$ioraw2' * 1024}')
+		[ "$(echo "$io2" | awk 'NR==1 {print $2}')" == "GB/s" ] && ioraw2=$(awk 'BEGIN{print '"$ioraw2"' * 1024}')
 		ioraw3=$(echo "$io3" | awk 'NR==1 {print $1}')
-		[ "$(echo "$io3" | awk 'NR==1 {print $2}')" == "GB/s" ] && ioraw3=$(awk 'BEGIN{print '$ioraw3' * 1024}')
-		ioall=$(awk 'BEGIN{print '$ioraw1' + '$ioraw2' + '$ioraw3'}')
-		ioavg=$(awk 'BEGIN{printf "%.1f", '$ioall' / 3}')
+		[ "$(echo "$io3" | awk 'NR==1 {print $2}')" == "GB/s" ] && ioraw3=$(awk 'BEGIN{print '"$ioraw3"' * 1024}')
+		ioall=$(awk 'BEGIN{print '"$ioraw1"' + '"$ioraw2"' + '"$ioraw3"'}')
+		ioavg=$(awk 'BEGIN{printf "%.1f", '"$ioall"' / 3}')
 		echo -e "   -----------------------" | tee -a "$log"
 		echo -e "   Average    : $ioavg MB/s" | tee -a "$log"
 	else
@@ -910,13 +905,13 @@ ioping() {
 
 	disk_test
 
-	if [ $(echo "$DISK_WRITE_TEST_AVG" | cut -d "." -f 1) -ge 1000 ]; then
+	if [ "$(echo "$DISK_WRITE_TEST_AVG" | cut -d "." -f 1)" -ge 1000 ]; then
 		DISK_WRITE_TEST_AVG=$(awk -v a="$DISK_WRITE_TEST_AVG" 'BEGIN { print a / 1000 }')
 		DISK_WRITE_TEST_UNIT="GB/s"
 	else
 		DISK_WRITE_TEST_UNIT="MB/s"
 	fi
-	if [ $(echo $DISK_READ_TEST_AVG | cut -d "." -f 1) -ge 1000 ]; then
+	if [ "$(echo "$DISK_READ_TEST_AVG" | cut -d "." -f 1)" -ge 1000 ]; then
 		DISK_READ_TEST_AVG=$(awk -v a="$DISK_READ_TEST_AVG" 'BEGIN { print a / 1000 }')
 		DISK_READ_TEST_UNIT="GB/s"
 	else
@@ -968,8 +963,8 @@ print_end_time() {
 
 print_intro() {
 	printf "%-75s\n" "-" | sed 's/\s/-/g'
-	printf ' Region: %s  https://bench.monster v.1.4.9 2019-12-24 \n' $region_name | tee -a "$log"
-	printf " Usage : curl -LsO bench.monster/speedtest.sh; bash speedtest.sh -%s\n" $region_name | tee -a "$log"
+	printf ' Region: %s  https://bench.monster v.1.4.9 2019-12-24 \n' "$region_name" | tee -a "$log"
+	printf " Usage : curl -LsO bench.monster/speedtest.sh; bash speedtest.sh -%s\n" "$region_name" | tee -a "$log"
 	echo "" | tee -a "$log"
 }
 
@@ -983,10 +978,10 @@ sharetest() {
 			grep "Location" | awk '{print "https://paste.ubuntu.com"$3}')
 		;;
 	'haste')
-		share_link=$(curl -X POST -s -d "$(cat $log)" https://hastebin.com/documents | awk -F '"' '{print "https://hastebin.com/"$4}')
+		share_link=$(curl -X POST -s -d "$(cat "$log")" https://hastebin.com/documents | awk -F '"' '{print "https://hastebin.com/"$4}')
 		;;
 	'clbin')
-		share_link=$(curl -sF 'clbin=<-' https://clbin.com <$log)
+		share_link=$(curl -sF 'clbin=<-' https://clbin.com <"$log")
 		;;
 	esac
 
@@ -994,14 +989,14 @@ sharetest() {
 	echo " - $GEEKBENCH_URL" | tee -a "$log"
 	echo " - $share_link"
 	echo ""
-	rm -f $log_up
+	rm -f "$log_up"
 
 }
 
 log_preupload() {
 	log_up="$HOME/speedtest_upload.log"
-	true >$log_up
-	$(cat speedtest.log 2>&1 | sed -r "s/\x1B\[([0-9]{1,2}(;[0-9]{1,2})?)?[m|K]//g" >$log_up)
+	true >"$log_up"
+	cat speedtest.log 2>&1 | sed -r "s/\x1B\[([0-9]{1,2}(;[0-9]{1,2})?)?[m|K]//g" >"$log_up"
 }
 
 get_ip_whois_org_name() {
@@ -1293,10 +1288,10 @@ case $1 in
 '-s' | '--s' | 'share' | '-share' | '--share')
 	bench_all
 	is_share="share"
-	if [[ $2 == "" ]]; then
+	if [[ "$2" == "" ]]; then
 		sharetest ubuntu
 	else
-		sharetest $2
+		sharetest "$2"
 	fi
 	;;
 'debug' | '-d' | '--d' | '-debug' | '--debug')
@@ -1308,7 +1303,7 @@ case $1 in
 esac
 
 if [[ ! $is_share == "share" ]]; then
-	case $2 in
+	case "$2" in
 	'share' | '-s' | '--s' | '-share' | '--share')
 		if [[ "$3" == "" ]]; then
 			sharetest ubuntu
